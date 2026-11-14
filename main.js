@@ -18,8 +18,8 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// Handle Login Form Submission
-const loginForm = document.getElementById("login-form");
+// Handle Login Form Submission (matches id="loginForm" in index.html)
+const loginForm = document.getElementById("loginForm");
 if (loginForm) {
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -42,9 +42,9 @@ if (loginForm) {
 
         // 3. Redirect based on role
         if (role === "super_admin") {
-          window.location.href = "admin-dashboard.html"; // Adjust to your admin page
+          window.location.href = "admin-dashboard.html";
         } else if (role === "clerk") {
-          window.location.href = "clerk-dashboard.html"; // Adjust to your clerk page
+          window.location.href = "clerk-dashboard.html";
         } else {
           alert("Access denied: Unrecognized user role.");
         }
@@ -57,4 +57,5 @@ if (loginForm) {
     }
   });
 }
+
 
