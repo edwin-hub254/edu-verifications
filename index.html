@@ -1,34 +1,738 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edu Verifications - Staff Login</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E-verifications</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #0f172a; background-image: radial-gradient(circle at top right, #1e293b 0%, #0f172a 50%); color: #e2e8f0; min-height: 100vh; }
+.app { max-width: 540px; margin: 0 auto; padding: 15px; }
+.header { display: flex; justify-content: space-between; align-items: center; padding: 15px 0 20px; }
+.brand { font-size: 22px; font-weight: 800; color: #38bdf8; letter-spacing: -0.5px; }
+.brand small { display: block; font-size: 11px; color: #64748b; font-weight: 500; margin-top: 2px; }
+.badge { padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: bold; background: #1e293b; color: #94a3b8; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
+.badge.super { background: #16a34a; color: white; box-shadow: 0 4px 10px rgba(22,163,74,0.3); }
+.badge.sub { background: #475569; color: white; }
+
+/* CLOCK */
+.clock-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid #334155; border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; gap: 20px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+.clock-wrap { position: relative; width: 100px; height: 100px; flex-shrink: 0; background: #0f172a; border-radius: 50%; border: 3px solid #38bdf8; box-shadow: 0 0 15px rgba(56,189,248,0.2); }
+.hand { position: absolute; left: 50%; bottom: 50%; transform-origin: 50% 100%; border-radius: 4px; }
+.hand.hour { width: 4px; height: 28px; background: #e2e8f0; margin-left: -2px; }
+.hand.minute { width: 3px; height: 38px; background: #38bdf8; margin-left: -1.5px; }
+.hand.second { width: 2px; height: 44px; background: #ef4444; margin-left: -1px; transition: transform 0.15s cubic-bezier(.4,2,.6,1); }
+.clock-center { position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; background: #38bdf8; border: 2px solid #0f172a; border-radius: 50%; margin-left: -7px; margin-top: -7px; }
+.clock-info { flex: 1; }
+.digital-time { font-family: 'Courier New', monospace; font-size: 32px; font-weight: 800; color: #38bdf8; letter-spacing: 2px; line-height: 1; text-shadow: 0 0 10px rgba(56,189,248,0.3); }
+.digital-date { font-size: 13px; color: #94a3b8; margin-top: 6px; font-weight: 600; }
+
+/* CARDS & TABS */
+.card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+.card h3 { margin: 0 0 15px 0; font-size: 16px; color: #f8fafc; font-weight: 700; }
+.tabs { display: flex; gap: 5px; margin-bottom: 20px; background: #1e293b; padding: 6px; border-radius: 14px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.2); }
+.tab { flex: 1; padding: 12px; text-align: center; border-radius: 10px; background: transparent; border: none; color: #94a3b8; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; }
+.tab.active { background: #38bdf8; color: #0f172a; box-shadow: 0 4px 10px rgba(56,189,248,0.3); }
+
+/* INPUTS & BUTTONS */
+input, select, button { width: 100%; padding: 14px; margin: 8px 0; background: #0f172a; border: 2px solid #334155; border-radius: 12px; font-size: 15px; color: #e2e8f0; font-family: inherit; transition: all 0.2s; }
+input:focus, select:focus { outline: none; border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56,189,248,0.2); }
+button { background: #38bdf8; color: #0f172a; border: none; font-weight: 800; cursor: pointer; font-size: 16px; box-shadow: 0 4px 12px rgba(56,189,248,0.3); }
+button:active { transform: scale(0.97); box-shadow: 0 2px 6px rgba(56,189,248,0.2); }
+.btn-red { background: #ef4444; color: white; box-shadow: 0 4px 12px rgba(239,68,68,0.3); }
+.btn-gray { background: #475569; color: white; box-shadow: none; }
+.btn-orange { background: #f97316; color: white; box-shadow: 0 4px 12px rgba(249,115,22,0.3); }
+
+/* STATS GRID */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+.stat-box { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.stat-label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+.stat-value { font-size: 22px; font-weight: 800; margin-top: 6px; }
+.stat-value.blue { color: #38bdf8; } .stat-value.green { color: #22c55e; } .stat-value.red { color: #ef4444; } .stat-value.yellow { color: #eab308; }
+
+/* TABLE */
+table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #334155; }
+th { color: #64748b; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* MESSAGES & MISC */
+.msg-error { background: rgba(127,29,29,0.5); border: 1px solid #ef4444; color: #fecaca; padding: 12px; border-radius: 10px; margin: 12px 0; font-size: 13px; font-weight: bold; }
+.msg-success { background: rgba(20,83,45,0.5); border: 1px solid #22c55e; color: #bbf7d0; padding: 12px; border-radius: 10px; margin: 12px 0; font-size: 13px; font-weight: bold; }
+.filter-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.filter-btn { padding: 8px 14px; font-size: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 20px; color: #94a3b8; cursor: pointer; width: auto; margin: 0; font-weight: 600; box-shadow: none; }
+.filter-btn.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; }
+.user-block { background: #0f172a; border: 1px solid #334155; border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+.user-block h4 { margin: 0 0 12px 0; font-size: 15px; color: #f8fafc; }
+.perm-row { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #1e293b; font-size: 13px; }
+.perm-row:last-child { border-bottom: none; }
+.perm-row input { width: auto; margin: 0 12px 0 0; transform: scale(1.3); }
+.perm-label { flex: 1; color: #cbd5e1; font-weight: 500; }
+.small-btn { padding: 8px 14px; font-size: 13px; width: auto; display: inline-block; margin: 6px 6px 0 0; border-radius: 8px; }
+.role-tag { padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: bold; }
+.role-tag.super { background: #16a34a; color: white; }
+.role-tag.sub { background: #475569; color: white; }
+.footer { text-align: center; font-size: 12px; color: #475569; padding: 30px 0 20px; font-weight: 500; }
+.footer b { color: #38bdf8; }
+.hidden { display: none; }
+#errorBanner { background: #dc3545; color: white; padding: 10px; text-align: center; font-weight: bold; display: none; font-size: 14px; }
+</style>
 </head>
 <body>
-    <div class="login-container">
-        <h2>Staff Login</h2>
-        <p>Sign in to verify customer M-Pesa payments.</p>
-        
-        <form id="loginForm">
-            <div class="input-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" placeholder="Email Address" required />
-            </div>
-            
-            <div class="input-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" placeholder="Password" required />
-            </div>
-            
-            <button type="submit" id="signInBtn">Sign In</button>
-        </form>
+<div id="errorBanner"></div>
+<div class="app">
+    <div class="header">
+        <div class="brand">E-verifications<small>Powered by E. Kereu</small></div>
+        <span class="badge" id="roleBadge">Not logged in</span>
     </div>
 
-    <!-- JavaScript Module Link -->
-    <script type="module" src="main.js"></script>
-"></script>
+    <div class="clock-card">
+        <div class="clock-wrap">
+            <div class="clock-face"></div>
+            <div class="hand hour" id="hourHand"></div>
+            <div class="hand minute" id="minuteHand"></div>
+            <div class="hand second" id="secondHand"></div>
+            <div class="clock-center"></div>
+        </div>
+        <div class="clock-info">
+            <div class="digital-time" id="digitalTime">--:--:--</div>
+            <div class="digital-date" id="digitalDate">Loading...</div>
+        </div>
+    </div>
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen">
+        <div class="card">
+            <h3>Login</h3>
+            <div id="loginMsg"></div>
+            <input type="text" id="loginUser" placeholder="Username">
+            <input type="password" id="loginPass" placeholder="Password">
+            <button onclick="doLogin()">Login</button>
+        </div>
+    </div>
+
+    <!-- DASHBOARD SCREEN -->
+    <div id="dashboardScreen" class="hidden">
+        <div class="stats-grid">
+            <div class="stat-box"><div class="stat-label">Total Codes</div><div class="stat-value blue" id="statCodes">0</div></div>
+            <div class="stat-box"><div class="stat-label">Total Amount</div><div class="stat-value green" id="statAmount">KES 0</div></div>
+            <div class="stat-box"><div class="stat-label">Rejections</div><div class="stat-value red" id="statRejected">0</div></div>
+            <div class="stat-box"><div class="stat-label">Today</div><div class="stat-value yellow" id="statToday">KES 0</div></div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" id="tabBtnVerify" onclick="switchTab('verify')">Verify</button>
+            <button class="tab" id="tabBtnHistory" onclick="switchTab('history')">History</button>
+            <button class="tab hidden" id="tabBtnAdmin" onclick="switchTab('admin')">Admin</button>
+        </div>
+
+        <!-- VERIFY TAB -->
+        <div id="tab-verify">
+            <div class="card" id="verifyCard">
+                <h3>Verify M-PESA Code</h3>
+                <div id="verifyMsg"></div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="mpesaCode" placeholder="M-PESA Code" style="text-transform:uppercase" maxlength="10">
+                    <button onclick="startCamera()" class="btn-gray" style="width: auto; margin: 8px 0; padding: 14px 18px; font-size: 20px;" title="Scan Code">📷</button>
+                </div>
+                <div id="scanStatus" style="font-size: 12px; color: #38bdf8; font-weight: bold; margin-bottom: 10px;"></div>
+
+                <input type="number" id="amount" placeholder="Amount (KES)">
+                <select id="shop">
+                    <option value="">-- Select Shop --</option>
+                    <option value="Route one">Route one</option>
+                    <option value="Kamangu">Kamangu</option>
+                    <option value="Muthure">Muthure</option>
+                    <option value="Karinde">Karinde</option>
+                    <option value="Gitaru">Gitaru</option>
+                    <option value="HQ">HQ</option>
+                    <option value="Kitengela">Kitengela</option>
+                    <option value="1B">1B</option>
+                    <option value="Undiri2">Undiri-2am</option>
+                    <option value="undiri5">Undiri-5am</option>
+                    <option value="Undiri">Kahuho-2pm</option>
+                    <option value="Kahuho">Kahuho-2am</option>
+                    <option value="Kanyariri">Kanyariri</option>
+                    <option value="Waithaka">Waithaka</option>
+                </select>
+                <button onclick="verifyCode(this)">Verify Code</button>
+            </div>
+        </div>
+
+        <!-- HISTORY TAB -->
+        <div id="tab-history" class="hidden">
+            <div class="card" id="historyCard">
+                <h3>Verification History</h3>
+                <input type="text" id="searchBox" placeholder="Search..." oninput="renderHistory()">
+                
+                <!-- SINGLE UNIFIED DOWNLOAD BUTTON -->
+                <button id="btnDownloadExcel" onclick="downloadExcel()" class="btn-orange hidden" style="margin-bottom: 12px;">⬇️ Download Excel (CSV)</button>
+                
+                <div class="filter-btns" id="filterBtns">
+                    <button class="filter-btn active" onclick="setShopFilter('', this)">All</button>
+                </div>
+                <table id="historyTable">
+                    <tr><th>Code</th><th>Amt</th><th>Shop</th><th>By</th><th></th></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- ADMIN TAB -->
+        <div id="tab-admin" class="hidden">
+            <div class="card" id="adminToolsCard">
+                <h3>Admin Tools</h3>
+                <button id="btnResetRej" class="btn-gray hidden" onclick="resetRejections()" style="margin-bottom:8px">Reset Rejection Counter</button>
+                <button id="btnClearAll" class="btn-red hidden" onclick="resetAllData()">Clear ALL Data</button>
+            </div>
+            <div class="card" id="manageCard">
+                <h3>Add New Sub-Admin</h3>
+                <input type="text" id="newAdminUser" placeholder="Username (min 3 chars)">
+                <input type="password" id="newAdminPass" placeholder="Password (min 4 chars)">
+                <button onclick="addSubAdmin()">Add Sub-Admin</button>
+            </div>
+            <div class="card"><h3>Users &amp; Permissions</h3><div id="userList"></div></div>
+            <div class="card" id="stepDownCard">
+                <h3>Step Down</h3>
+                <button class="btn-orange" onclick="stepDown()">Step Down as Super Admin</button>
+            </div>
+            
+            <!-- PREMIUM CARD -->
+            <div class="card" style="border: 2px solid #eab308; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);">
+                <h3 style="color: #eab308;">⭐ Premium Features</h3>
+                <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 10px;">
+                    Unlock Excel Downloads.<br>
+                    <b>Pay KES 100 to:</b> 0703592418<br>
+                    <i>Enter your activation code below:</i>
+                </p>
+                <div id="premiumMsg"></div>
+                <input type="text" id="premiumCode" placeholder="Enter Activation Code" style="text-transform: uppercase;">
+                <button onclick="activatePremium()" class="btn-orange">Activate Premium</button>
+            </div>
+        </div>
+
+        <!-- PASSWORD CHANGE -->
+        <div class="card">
+            <h3>Change My Password</h3>
+            <div id="pwdMsg"></div>
+            <input type="password" id="currentPwd" placeholder="Current Password">
+            <input type="password" id="newPwd" placeholder="New Password (min 4 chars)">
+            <button onclick="changePassword()" class="btn-orange">Update Password</button>
+        </div>
+
+        <button onclick="logout()" class="btn-red" style="margin-top:10px">Logout</button>
+    </div>
+    <div class="footer">Powered by <b>E. Kereu</b></div>
+</div>
+
+<!-- CUSTOM CAMERA MODAL -->
+<div id="cameraModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; flex-direction: column;">
+    <div style="display: flex; justify-content: space-between; padding: 15px; color: white; background: rgba(0,0,0,0.8);">
+        <button onclick="stopCamera()" class="btn-red" style="width: auto; padding: 10px 20px; margin: 0;">Cancel</button>
+        <span style="font-weight: bold; font-size: 18px; align-self: center;">Align Code in Box</span>
+        <div style="width: 80px;"></div>
+    </div>
+    <div style="flex: 1; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+        <video id="cameraVideo" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+        <div style="position: absolute; width: 85%; height: 15%; border: 3px solid #38bdf8; border-radius: 12px; box-shadow: 0 0 0 4000px rgba(0,0,0,0.6);"></div>
+    </div>
+    <div style="padding: 20px; background: rgba(0,0,0,0.8); display: flex; justify-content: center;">
+        <button onclick="captureAndScan()" class="btn-orange" style="width: 80%; padding: 15px; font-size: 18px;">📸 Capture & Scan</button>
+    </div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+<script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+
+<script>
+// 1. ERROR BANNER
+window.onerror = function(msg, url, line) {
+    var b = document.getElementById('errorBanner');
+    if(b) { b.style.display = 'block'; b.textContent = 'ERROR: ' + msg + ' (Line ' + line + ')'; }
+    return false;
+};
+
+// 2. THE CLOCK
+(function(){
+    var hh=document.getElementById('hourHand'),mh=document.getElementById('minuteHand'),sh=document.getElementById('secondHand'),dt=document.getElementById('digitalTime'),dd=document.getElementById('digitalDate');
+    function p(n){return n<10?'0'+n:''+n}
+    function tick(){
+        var n=new Date(),h=n.getHours(),m=n.getMinutes(),s=n.getSeconds();
+        hh.style.transform='rotate('+((h%12)*30+m*0.5)+'deg)';
+        mh.style.transform='rotate('+(m*6+s*0.1)+'deg)';
+        sh.style.transform='rotate('+(s*6)+'deg)';
+        dt.textContent=p(h)+':'+p(m)+':'+p(s);
+        var d=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],mo=['January','February','March','April','May','June','July','August','September','October','November','December'];
+        dd.textContent=d[n.getDay()]+', '+n.getDate()+' '+mo[n.getMonth()]+' '+n.getFullYear()
+    }
+    tick();setInterval(tick,1000);
+})();
+
+// 3. FIREBASE CONFIGURATION
+var firebaseConfig = { 
+    apiKey: "AIzaSyAn-q1styZwhPrUdZXKb063fAE2HOSF8jk", 
+    authDomain: "e-verifications-a06b3.firebaseapp.com", 
+    projectId: "e-verifications-a06b3", 
+    storageBucket: "e-verifications-a06b3.firebasestorage.app", 
+    messagingSenderId: "317730335612", 
+    appId: "1:317730335612:web:b7d044164525b8df11d2f9" 
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
+
+// 4. GLOBAL VARIABLES & STORAGE
+var ALL_PERMISSIONS={verify_codes:'Verify M-PESA codes',view_history:'View verification history',delete_own:'Delete codes they entered',delete_any:'Delete any code',reset_rejections:'Reset rejection counter',clear_all:'Clear ALL data'};
+var DEFAULT_USERS={'admin':{password:'1234',role:'super_admin',permissions:{}},'sub1':{password:'pass',role:'sub_admin',permissions:{verify_codes:true,view_history:true}}};
+var currentTransactions = [];
+var videoStream = null;
+var currentShopFilter = '';
+
+function loadUsers(){var s={};try{s=JSON.parse(localStorage.getItem('ev_users')||'{}')}catch(e){s={}}var r={},k;for(k in DEFAULT_USERS)r[k]=JSON.parse(JSON.stringify(DEFAULT_USERS[k]));for(k in s)r[k]=s[k];return r}
+function saveUsers(u){var out={},k;for(k in u){if(!DEFAULT_USERS[k])out[k]=u[k];else{var d=DEFAULT_USERS[k];if(u[k].password!==d.password||u[k].role!==d.role||JSON.stringify(u[k].permissions||{})!==JSON.stringify(d.permissions||{}))out[k]=u[k]}}localStorage.setItem('ev_users',JSON.stringify(out))}
+function loadRejectedCount(){return parseInt(localStorage.getItem('ev_rejectedCount')||'0',10)}
+function saveRejectedCount(n){localStorage.setItem('ev_rejectedCount',n)}
+function currentUser(){return localStorage.getItem('ev_currentUser')}
+function currentUserRecord(){var u=currentUser();if(!u)return null;return loadUsers()[u]||null}
+function isSuperAdmin(){var r=currentUserRecord();return r&&r.role==='super_admin'}
+function hasPermission(p){var r=currentUserRecord();if(!r)return false;if(r.role==='super_admin')return true;return r.permissions&&r.permissions[p]===true}
+function isPremiumActive(){return localStorage.getItem('ev_premium_activated')==='true'}
+
+// 5. AUTHENTICATION & TABS
+function doLogin(){
+    var u=document.getElementById('loginUser').value.trim();
+    var p=document.getElementById('loginPass').value;
+    var users=loadUsers();
+    
+    if(users[u] && users[u].password===p){
+        localStorage.setItem('ev_currentUser', u);
+        document.getElementById('loginUser').value='';
+        document.getElementById('loginPass').value='';
+        document.getElementById('loginMsg').innerHTML='';
+        showDashboard();
+    } else {
+        document.getElementById('loginMsg').innerHTML='<div class="msg-error">Invalid username or password.</div>';
+    }
+}
+
+function logout(){
+    localStorage.removeItem('ev_currentUser');
+    document.getElementById('dashboardScreen').classList.add('hidden');
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('roleBadge').textContent='Not logged in';
+    document.getElementById('roleBadge').className='badge';
+}
+
+function showDashboard(){
+    var u=currentUser();
+    if(!u)return;
+    var r=currentUserRecord();
+    
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('dashboardScreen').classList.remove('hidden');
+    
+    var rb=document.getElementById('roleBadge');
+    if(r.role==='super_admin'){
+        rb.textContent='Super Admin ('+u+')';
+        rb.className='badge super';
+    } else {
+        rb.textContent='Sub-Admin ('+u+')';
+        rb.className='badge sub';
+    }
+    
+    document.getElementById('tabBtnAdmin').classList.toggle('hidden', !isSuperAdmin());
+    document.getElementById('tabBtnHistory').classList.toggle('hidden', !hasPermission('view_history'));
+    document.getElementById('verifyCard').classList.toggle('hidden', !hasPermission('verify_codes'));
+    document.getElementById('btnDownloadExcel').classList.toggle('hidden', !isPremiumActive() && !isSuperAdmin());
+    document.getElementById('btnResetRej').classList.toggle('hidden', !isSuperAdmin());
+    document.getElementById('btnClearAll').classList.toggle('hidden', !isSuperAdmin());
+
+    switchTab(hasPermission('verify_codes') ? 'verify' : 'history');
+    fetchTransactions();
+    renderUserList();
+}
+
+function switchTab(tab){
+    document.getElementById('tab-verify').classList.toggle('hidden', tab!=='verify');
+    document.getElementById('tab-history').classList.toggle('hidden', tab!=='history');
+    document.getElementById('tab-admin').classList.toggle('hidden', tab!=='admin');
+    
+    document.getElementById('tabBtnVerify').classList.toggle('active', tab==='verify');
+    document.getElementById('tabBtnHistory').classList.toggle('active', tab==='history');
+    document.getElementById('tabBtnAdmin').classList.toggle('active', tab==='admin');
+    
+    if(tab==='history') renderHistory();
+    if(tab==='admin' && isSuperAdmin()) renderUserList();
+}
+// 6. FETCH & RENDER TRANSACTIONS
+function fetchTransactions(){
+    db.collection('transactions').orderBy('timestamp','desc').onSnapshot(function(snapshot){
+        currentTransactions=[];
+        snapshot.forEach(function(doc){
+            var data=doc.data();
+            data.id=doc.id;
+            currentTransactions.push(data);
+        });
+        updateStats();
+        if(!document.getElementById('tab-history').classList.contains('hidden')){
+            renderHistory();
+        }
+    });
+}
+function updateStats(){
+    var totalCodes = 0;
+    var totalAmt = 0;
+    var todayAmt = 0;
+    var todayStr = new Date().toISOString().slice(0,10);
+    
+    var filteredList = currentTransactions;
+    if (currentShopFilter && currentShopFilter.trim() !== '') {
+        filteredList = currentTransactions.filter(function(t){
+            return (t.shop || '').toLowerCase() === currentShopFilter.toLowerCase();
+        });
+    }
+    
+    totalCodes = filteredList.length;
+    
+    filteredList.forEach(function(t){
+        totalAmt += (parseFloat(t.amount) || 0);
+        var tDate = '';
+        if(t.timestamp && t.timestamp.seconds){
+            tDate = new Date(t.timestamp.seconds * 1000).toISOString().slice(0,10);
+        } else if(t.date){
+            tDate = t.date.slice(0,10);
+        }
+        if(tDate === todayStr){
+            todayAmt += (parseFloat(t.amount) || 0);
+        }
+    });
+    
+    document.getElementById('statCodes').textContent = totalCodes;
+    document.getElementById('statAmount').textContent = 'KES ' + totalAmt.toLocaleString();
+    document.getElementById('statRejected').textContent = loadRejectedCount();
+    document.getElementById('statToday').textContent = 'KES ' + todayAmt.toLocaleString();
+}
+
+function setShopFilter(shop, btn){
+    currentShopFilter = shop;
+    var buttons = document.querySelectorAll('#filterBtns .filter-btn');
+    buttons.forEach(function(b){ b.classList.remove('active'); });
+    if(btn) btn.classList.add('active');
+    renderHistory();
+    updateStats();
+}
+
+
+
+// 7. UNIFIED DOWNLOAD EXCEL FUNCTION (Handles All or Active Shop Automatically)
+function downloadExcel() {
+    if (!isSuperAdmin() && !isPremiumActive()) {
+        alert("Access Denied. Premium Feature.");
+        return;
+    }
+
+    if (!currentTransactions || currentTransactions.length === 0) {
+        alert("No transactions to download yet!");
+        return;
+    }
+
+    var dataToExport = currentTransactions;
+    if (currentShopFilter && currentShopFilter.trim() !== '') {
+        dataToExport = currentTransactions.filter(function(t) {
+            return (t.shop || '').toLowerCase() === currentShopFilter.toLowerCase();
+        });
+    }
+
+    if (dataToExport.length === 0) {
+        alert('No records found for shop: ' + currentShopFilter);
+        return;
+    }
+
+    var csv = 'Code,Amount,Shop,Verified By,Date\n';
+    dataToExport.forEach(function(t) {
+        var date = '';
+        if (t.timestamp && t.timestamp.seconds) {
+            date = new Date(t.timestamp.seconds * 1000).toLocaleString();
+        } else if (t.date) {
+            date = t.date;
+        }
+
+        csv += `"${t.code || ''}","${t.amount || ''}","${t.shop || ''}","${t.by || t.user || ''}","${date}"\n`;
+    });
+
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    var link = document.createElement('a');
+    var url = URL.createObjectURL(blob);
+    
+    var fileName = (!currentShopFilter || currentShopFilter === '') ? 'Mpesa_All_Transactions.csv' : 'Mpesa_' + currentShopFilter.replace(/\s+/g, '_') + '.csv';
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', fileName);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// 8. SHOP FILTER & HISTORY RENDER
+function setShopFilter(shop, btn){
+    currentShopFilter = shop;
+    var buttons = document.querySelectorAll('#filterBtns .filter-btn');
+    buttons.forEach(function(b){ b.classList.remove('active'); });
+    if(btn) btn.classList.add('active');
+    renderHistory();
+    updateStats();
+}
+
+
+function renderHistory(){
+    var query = document.getElementById('searchBox').value.toLowerCase();
+    var table = document.getElementById('historyTable');
+    
+    var shopsMap = {};
+    currentTransactions.forEach(function(t){ if(t.shop) shopsMap[t.shop] = true; });
+    var filterBtnsHtml = '<button class="filter-btn ' + (currentShopFilter === '' ? 'active' : '') + '" onclick="setShopFilter(\'\', this)">All</button>';
+    for(var s in shopsMap){
+        filterBtnsHtml += '<button class="filter-btn ' + (currentShopFilter === s ? 'active' : '') + '" onclick="setShopFilter(\'' + s + '\', this)">' + s + '</button>';
+    }
+    document.getElementById('filterBtns').innerHTML = filterBtnsHtml;
+    
+    var filtered = currentTransactions.filter(function(t){
+        var matchShop = (currentShopFilter === '' || (t.shop || '').toLowerCase() === currentShopFilter.toLowerCase());
+        var matchQuery = (t.code || '').toLowerCase().includes(query) || (t.shop || '').toLowerCase().includes(query) || (t.by || '').toLowerCase().includes(query);
+        return matchShop && matchQuery;
+    });
+    
+    var html = '<tr><th>Code</th><th>Amt</th><th>Shop</th><th>By</th><th></th></tr>';
+    filtered.forEach(function(t){
+        var canDel = isSuperAdmin() || (currentUser() === t.by && hasPermission('delete_own')) || hasPermission('delete_any');
+        html += `<tr>
+            <td><b>${t.code}</b></td>
+            <td>${t.amount}</td>
+            <td>${t.shop}</td>
+            <td>${t.by}</td>
+            <td>${canDel ? '<button onclick="deleteTransaction(\'' + t.id + '\')" class="btn-red" style="padding:4px 8px; font-size:11px; width:auto; margin:0;">X</button>' : ''}</td>
+        </tr>`;
+    });
+    table.innerHTML = html;
+}
+
+// 9. VERIFICATION & PREMIUM LOGIC
+function verifyCode(btn){
+    var code = document.getElementById('mpesaCode').value.trim().toUpperCase();
+    var amount = document.getElementById('amount').value.trim();
+    var shop = document.getElementById('shop').value;
+    var msg = document.getElementById('verifyMsg');
+    
+    if(!code || !amount || !shop){
+        msg.innerHTML = '<div class="msg-error">Please fill in all fields.</div>';
+        return;
+    }
+    
+    db.collection('transactions').where('code', '==', code).get().then(function(snapshot){
+             if(!snapshot.empty){
+            var usedShop = snapshot.docs[0].data().shop || 'Unknown Shop';
+            msg.innerHTML = '<div class="msg-error">Code ' + code + ' has already been verified at <b>' + usedShop + '</b>!</div>';
+  
+            var rej = loadRejectedCount() + 1;
+            saveRejectedCount(rej);
+            updateStats();
+            return;
+        }
+        
+        db.collection('transactions').add({
+            code: code,
+            amount: parseFloat(amount),
+            shop: shop,
+            by: currentUser(),
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(function(){
+            msg.innerHTML = '<div class="msg-success">Code ' + code + ' verified successfully!</div>';
+            document.getElementById('mpesaCode').value = '';
+            document.getElementById('amount').value = '';
+            document.getElementById('shop').value = '';
+        });
+    });
+}
+
+function deleteTransaction(id){
+    if(confirm('Are you sure you want to delete this transaction?')){
+        db.collection('transactions').doc(id).delete();
+    }
+}
+
+function activatePremium(){
+    var code = document.getElementById('premiumCode').value.trim().toUpperCase();
+    var msg = document.getElementById('premiumMsg');
+    if(code === 'EDWIN100' || code === 'PREMIUM100' || code === 'PAID100'){
+        localStorage.setItem('ev_premium_activated', 'true');
+        msg.innerHTML = '<div class="msg-success">Premium activated successfully!</div>';
+        document.getElementById('btnDownloadExcel').classList.remove('hidden');
+    } else {
+        msg.innerHTML = '<div class="msg-error">Invalid activation code. Please pay KES 100 to 0703592418 first.</div>';
+    }
+}
+
+function changePassword(){
+    var cur = document.getElementById('currentPwd').value;
+    var neu = document.getElementById('newPwd').value;
+    var msg = document.getElementById('pwdMsg');
+    var u = currentUser();
+    var users = loadUsers();
+    
+    if(users[u].password !== cur){
+        msg.innerHTML = '<div class="msg-error">Current password is incorrect.</div>';
+        return;
+    }
+    if(neu.length < 4){
+        msg.innerHTML = '<div class="msg-error">New password must be at least 4 characters.</div>';
+        return;
+    }
+    users[u].password = neu;
+    saveUsers(users);
+    msg.innerHTML = '<div class="msg-success">Password updated successfully!</div>';
+    document.getElementById('currentPwd').value = '';
+    document.getElementById('newPwd').value = '';
+}
+
+function addSubAdmin(){
+    var u = document.getElementById('newAdminUser').value.trim();
+    var p = document.getElementById('newAdminPass').value;
+    var users = loadUsers();
+    
+    if(u.length < 3 || p.length < 4){
+        alert('Username must be >=3 chars and password >=4 chars.');
+        return;
+    }
+    if(users[u]){
+        alert('User already exists!');
+        return;
+    }
+    users[u] = {password: p, role: 'sub_admin', permissions: {verify_codes: true, view_history: true}};
+    saveUsers(users);
+    document.getElementById('newAdminUser').value = '';
+    document.getElementById('newAdminPass').value = '';
+    renderUserList();
+    alert('Sub-admin added successfully!');
+}
+
+function renderUserList(){
+    var list = document.getElementById('userList');
+    var users = loadUsers();
+    var html = '';
+    for(var u in users){
+        if(u === 'admin') continue;
+        var r = users[u];
+        html += `<div class="user-block">
+            <h4>${u} <span class="role-tag ${r.role}">${r.role}</span></h4>`;
+        for(var p in ALL_PERMISSIONS){
+            var checked = r.permissions && r.permissions[p] === true ? 'checked' : '';
+            html += `<label class="perm-row">
+                <input type="checkbox" ${checked} onchange="updatePerm('${u}', '${p}', this.checked)">
+                <span class="perm-label">${ALL_PERMISSIONS[p]}</span>
+            </label>`;
+        }
+        html += `<button onclick="deleteUser('${u}')" class="btn-red small-btn">Delete User</button></div>`;
+    }
+    list.innerHTML = html;
+}
+
+function updatePerm(user, perm, val){
+    var users = loadUsers();
+    if(users[user]){
+        if(!users[user].permissions) users[user].permissions = {};
+        users[user].permissions[perm] = val;
+        saveUsers(users);
+    }
+}
+
+function deleteUser(u){
+    if(confirm('Delete user ' + u + '?')){
+        var users = loadUsers();
+        delete users[u];
+        saveUsers(users);
+        renderUserList();
+    }
+}
+
+function resetRejections(){
+    saveRejectedCount(0);
+    updateStats();
+}
+
+function resetAllData(){
+    if(confirm('WARNING: This will clear rejection counters!')){
+        saveRejectedCount(0);
+        updateStats();
+    }
+}
+
+function stepDown(){
+    if(confirm('Step down as super admin?')){
+        var u = currentUser();
+        var users = loadUsers();
+        if(users[u]){
+            users[u].role = 'sub_admin';
+            saveUsers(users);
+            showDashboard();
+        }
+    }
+}
+
+// 10. AUTO-LOGIN ON LOAD
+var savedUser = localStorage.getItem('ev_currentUser');
+if(savedUser){
+    var usersAtLoad = loadUsers();
+    if(usersAtLoad && usersAtLoad[savedUser]){
+        showDashboard();
+    } else {
+        localStorage.removeItem('ev_currentUser');
+    }
+}
+
+// 11. CAMERA & SCANNER
+function startCamera(){
+    document.getElementById('cameraModal').classList.remove('hidden');
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(function(stream){
+        videoStream = stream;
+        document.getElementById('cameraVideo').srcObject = stream;
+    }).catch(function(err){
+        alert('Camera access denied or unavailable.');
+        stopCamera();
+    });
+}
+
+function stopCamera(){
+    if(videoStream){
+        videoStream.getTracks().forEach(function(track){ track.stop(); });
+        videoStream = null;
+    }
+    document.getElementById('cameraModal').classList.add('hidden');
+}
+
+function captureAndScan(){
+    var video = document.getElementById('cameraVideo');
+    var canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    document.getElementById('scanStatus').textContent = 'Scanning image...';
+    stopCamera();
+    
+    Tesseract.recognize(canvas.toDataURL('image/png'), 'eng').then(function(result){
+        var text = result.data.text;
+        var match = text.match(/[A-Z0-9]{10}/);
+        if(match){
+            document.getElementById('mpesaCode').value = match[0];
+            document.getElementById('scanStatus').textContent = 'Code found: ' + match[0];
+        } else {
+            document.getElementById('scanStatus').textContent = 'No code detected. Try typing manually.';
+        }
+    }).catch(function(){
+        document.getElementById('scanStatus').textContent = 'Scan failed. Try again.';
+    });
+}
+</script>
 </body>
 </html>
-
