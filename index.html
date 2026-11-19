@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+
+
+    <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -54,6 +56,9 @@ button:active { transform: scale(0.97); box-shadow: 0 2px 6px rgba(56,189,248,0.
 table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
 th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #334155; }
 th { color: #64748b; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+.table-total { background: #0f172a; font-weight: bold; color: #94a3b8; }
+.table-grand { background: #16a34a; color: white; font-weight: bold; }
+.table-rejected { background: #7f1d1d; color: #fecaca; font-weight: bold; }
 
 /* MESSAGES & MISC */
 .msg-error { background: rgba(127,29,29,0.5); border: 1px solid #ef4444; color: #fecaca; padding: 12px; border-radius: 10px; margin: 12px 0; font-size: 13px; font-weight: bold; }
@@ -143,17 +148,6 @@ th { color: #64748b; font-weight: 700; font-size: 11px; text-transform: uppercas
                     <option value="Route one">Route one</option>
                     <option value="Kamangu">Kamangu</option>
                     <option value="Muthure">Muthure</option>
-                    <option value="Karinde">Karinde</option>
-                    <option value="Gitaru">Gitaru</option>
-                    <option value="HQ">HQ</option>
-                    <option value="Kitengela">Kitengela</option>
-                    <option value="1B">1B</option>
-                    <option value="Undiri2">Undiri-2am</option>
-                    <option value="undiri5">Undiri-5am</option>
-                    <option value="Undiri">Kahuho-2pm</option>
-                    <option value="Kahuho">Kahuho-2am</option>
-                    <option value="Kanyariri">Kanyariri</option>
-                    <option value="Waithaka">Waithaka</option>
                 </select>
                 <button onclick="verifyCode(this)">Verify Code</button>
             </div>
@@ -164,8 +158,6 @@ th { color: #64748b; font-weight: 700; font-size: 11px; text-transform: uppercas
             <div class="card" id="historyCard">
                 <h3>Verification History</h3>
                 <input type="text" id="searchBox" placeholder="Search..." oninput="renderHistory()">
-                
-                <!-- SINGLE UNIFIED DOWNLOAD BUTTON -->
                 <button id="btnDownloadExcel" onclick="downloadExcel()" class="btn-orange hidden" style="margin-bottom: 12px;">⬇️ Download Excel (CSV)</button>
                 
                 <div class="filter-btns" id="filterBtns">
@@ -210,14 +202,15 @@ th { color: #64748b; font-weight: 700; font-size: 11px; text-transform: uppercas
             </div>
         </div>
 
-        <!-- PASSWORD CHANGE -->
         <!-- MY PROFILE -->
-<div class="card">
-    <h3>My Profile</h3>
-    <div id="profileMsg"></div>
-    <input type="text" id="profileName" placeholder="Enter your real name">
-    <button onclick="updateProfileName()" class="btn-gray">Update Name</button>
-</div>
+        <div class="card">
+            <h3>My Profile</h3>
+            <div id="profileMsg"></div>
+            <input type="text" id="profileName" placeholder="Enter your real name">
+            <button onclick="updateProfileName()" class="btn-gray">Update Name</button>
+        </div>
+
+        <!-- PASSWORD CHANGE -->
         <div class="card">
             <h3>Change My Password</h3>
             <div id="pwdMsg"></div>
@@ -240,7 +233,8 @@ th { color: #64748b; font-weight: 700; font-size: 11px; text-transform: uppercas
     </div>
     <div style="flex: 1; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;">
         <video id="cameraVideo" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
-        <div style="position: absolute; width: 85%; height: 15%; border: 3px solid #38bdf8; border-radius: 12px; box-shadow: 0 0 0 4000px rgba(0,0,0,0.6);"></div>
+        <!-- Focus Box (20% height) -->
+        <div style="position: absolute; width: 85%; height: 20%; border: 3px solid #38bdf8; border-radius: 12px; box-shadow: 0 0 0 4000px rgba(0,0,0,0.6);"></div>
     </div>
     <div style="padding: 20px; background: rgba(0,0,0,0.8); display: flex; justify-content: center;">
         <button onclick="captureAndScan()" class="btn-orange" style="width: 80%; padding: 15px; font-size: 18px;">📸 Capture & Scan</button>
@@ -291,7 +285,6 @@ var ALL_PERMISSIONS={verify_codes:'Verify M-PESA codes',view_history:'View verif
 var DEFAULT_USERS={'admin':{password:'1234',role:'super_admin',permissions:{}},'sub1':{password:'pass',role:'sub_admin',permissions:{verify_codes:true,view_history:true}}};
 var currentTransactions = [];
 var videoStream = null;
-var currentShopFilter = '';
 
 function loadUsers(){var s={};try{s=JSON.parse(localStorage.getItem('ev_users')||'{}')}catch(e){s={}}var r={},k;for(k in DEFAULT_USERS)r[k]=JSON.parse(JSON.stringify(DEFAULT_USERS[k]));for(k in s)r[k]=s[k];return r}
 function saveUsers(u){var out={},k;for(k in u){if(!DEFAULT_USERS[k])out[k]=u[k];else{var d=DEFAULT_USERS[k];if(u[k].password!==d.password||u[k].role!==d.role||JSON.stringify(u[k].permissions||{})!==JSON.stringify(d.permissions||{}))out[k]=u[k]}}localStorage.setItem('ev_users',JSON.stringify(out))}
@@ -301,19 +294,341 @@ function currentUser(){return localStorage.getItem('ev_currentUser')}
 function currentUserRecord(){var u=currentUser();if(!u)return null;return loadUsers()[u]||null}
 function isSuperAdmin(){var r=currentUserRecord();return r&&r.role==='super_admin'}
 function hasPermission(p){var r=currentUserRecord();if(!r)return false;if(r.role==='super_admin')return true;return r.permissions&&r.permissions[p]===true}
-function isPremiumActive(){return localStorage.getItem('ev_premium_activated')==='true'}
+function isPremiumActive(){return localStorage.getItem('ev_premium_unlocked')==='true'}
 
-// 5. AUTHENTICATION & TABS
+// 5. NAVIGATION & LOGIN
+function hideAll(){document.getElementById('loginScreen').classList.add('hidden');document.getElementById('dashboardScreen').classList.add('hidden')}
 function doLogin(){
     var u=document.getElementById('loginUser').value.trim();
-    var p=document.getElementById('loginPass').value;
+    var p=document.getElementById('loginPass').value.trim();
     var users=loadUsers();
-    
-    if(users[u] && users[u].password===p){
-        localStorage.setItem('ev_currentUser', u);
-        document.getElementById('loginUser').value='';
-        document.getElementById('loginPass').value='';
+    if(users[u]&&users[u].password===p){
+        localStorage.setItem('ev_currentUser',u);
         document.getElementById('loginMsg').innerHTML='';
         showDashboard();
-    } else {
-        document.getElementById('loginMsg').innerHTML='<div class="msg-error">Invalid username or pa
+    }else{
+        document.getElementById('loginMsg').innerHTML='<div class="msg-error">Invalid username or password.</div>';
+    }
+}
+function logout(){
+    localStorage.removeItem('ev_currentUser');
+    hideAll();
+    document.getElementById('loginScreen').classList.remove('hidden');
+    var b=document.getElementById('roleBadge');
+    b.textContent='Not logged in';b.className='badge';
+}
+function showDashboard(){
+    var rec=currentUserRecord();if(!rec){logout();return}
+    hideAll();
+    document.getElementById('dashboardScreen').classList.remove('hidden');
+    
+    var displayName = rec.realName ? rec.realName : currentUser();
+    var b=document.getElementById('roleBadge');
+    if(rec.role==='super_admin'){b.textContent='SUPER ADMIN (' + displayName + ')';b.className='badge super'}else{b.textContent='SUB ADMIN (' + displayName + ')';b.className='badge sub'}
+    
+    if(isSuperAdmin()){
+        document.getElementById('tabBtnAdmin').classList.remove('hidden');
+        document.getElementById('manageCard').classList.remove('hidden');
+        document.getElementById('stepDownCard').classList.remove('hidden');
+        
+        if(isPremiumActive()) {
+            document.getElementById('btnDownloadExcel').classList.remove('hidden');
+        } else {
+            document.getElementById('btnDownloadExcel').classList.add('hidden');
+        }
+    }else{
+        document.getElementById('tabBtnAdmin').classList.add('hidden');
+        document.getElementById('btnDownloadExcel').classList.add('hidden');
+    }
+    
+    var ht=hasPermission('reset_rejections')||hasPermission('clear_all');
+    var tc=document.getElementById('adminToolsCard');
+    if(ht){
+        tc.classList.remove('hidden');
+        document.getElementById('btnResetRej').classList.toggle('hidden',!hasPermission('reset_rejections'));
+        document.getElementById('btnClearAll').classList.toggle('hidden',!hasPermission('clear_all'));
+    }else tc.classList.add('hidden');
+    
+    document.getElementById('verifyCard').classList.toggle('hidden',!hasPermission('verify_codes'));
+    document.getElementById('historyCard').classList.toggle('hidden',!hasPermission('view_history'));
+    
+    if(typeof renderUserList === 'function') renderUserList();
+    if(typeof loadTransactionsFromCloud === 'function') loadTransactionsFromCloud();
+    
+    switchTab('verify');
+}
+function switchTab(name){
+    document.getElementById('tabBtnVerify').classList.remove('active');
+    document.getElementById('tabBtnHistory').classList.remove('active');
+    document.getElementById('tabBtnAdmin').classList.remove('active');
+    document.getElementById('tab-verify').classList.add('hidden');
+    document.getElementById('tab-history').classList.add('hidden');
+    document.getElementById('tab-admin').classList.add('hidden');
+    if(name==='verify'){
+        document.getElementById('tab-verify').classList.remove('hidden');
+        document.getElementById('tabBtnVerify').classList.add('active');
+    }else if(name==='history'){
+        document.getElementById('tab-history').classList.remove('hidden');
+        document.getElementById('tabBtnHistory').classList.add('active');
+    }else{
+        document.getElementById('tab-admin').classList.remove('hidden');
+        document.getElementById('tabBtnAdmin').classList.add('active');
+    }
+}
+</script>
+<script>
+// 6. CAMERA SCANNER LOGIC
+async function startCamera() {
+    try {
+        videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        document.getElementById('cameraVideo').srcObject = videoStream;
+        document.getElementById('cameraModal').classList.remove('hidden');
+        document.getElementById('cameraModal').style.display = 'flex';
+    } catch (err) { alert("Camera access denied! Please allow camera permissions."); }
+}
+function stopCamera() {
+    if (videoStream) { videoStream.getTracks().forEach(track => track.stop()); videoStream = null; }
+    document.getElementById('cameraModal').classList.add('hidden');
+    document.getElementById('cameraModal').style.display = 'none';
+}
+function captureAndScan() {
+    var video = document.getElementById('cameraVideo');
+    var tempCanvas = document.createElement('canvas');
+    var tempCtx = tempCanvas.getContext('2d');
+    var videoWidth = video.videoWidth; var videoHeight = video.videoHeight;
+    var boxWidth = videoWidth * 0.85; var boxHeight = videoHeight * 0.20;
+    var startX = (videoWidth - boxWidth) / 2; var startY = (videoHeight - boxHeight) / 2;
+
+    tempCanvas.width = boxWidth; tempCanvas.height = boxHeight;
+    tempCtx.drawImage(video, startX, startY, boxWidth, boxHeight, 0, 0, boxWidth, boxHeight);
+    stopCamera();
+
+    var finalCanvas = document.createElement('canvas');
+    finalCanvas.width = boxWidth * 2; finalCanvas.height = boxHeight * 2;
+    var finalCtx = finalCanvas.getContext('2d');
+    finalCtx.filter = 'grayscale(1) contrast(2)';
+    finalCtx.drawImage(tempCanvas, 0, 0, boxWidth, boxHeight, 0, 0, finalCanvas.width, finalCanvas.height);
+
+    var status = document.getElementById('scanStatus');
+    status.innerHTML = "⏳ Enhancing image and scanning...";
+
+    Tesseract.recognize(finalCanvas, 'eng', {
+        logger: m => { if (m.status === 'recognizing text') status.innerHTML = "⏳ Reading text: " + Math.round(m.progress * 100) + "%"; }
+    }).then(({ data: { text } }) => {
+        status.innerHTML = "✅ Scan complete. Check the code!";
+        var cleanText = text.toUpperCase().replace(/[^A-Z0-9]/g, ' ');
+        var regex = /\b[A-Z][A-Z0-9]{9}\b/g;
+        var match = cleanText.match(regex);
+        if (match) {
+            document.getElementById('mpesaCode').value = match[0];
+            status.innerHTML = "✅ Code found: " + match[0];
+        } else {
+            status.innerHTML = "❌ Could not find a code. Please try again or type manually.";
+            alert("Could not read the code clearly. Make sure it is inside the blue box.");
+        }
+    }).catch(function(error) {
+        status.innerHTML = "❌ Scanner failed. Check internet.";
+        alert("Scanner error: " + error.message);
+    });
+}
+
+// 7. CLOUD DATABASE (FIRESTORE)
+function loadTransactionsFromCloud() {
+    db.collection("transactions").get().then(function(querySnapshot) {
+        currentTransactions = []; 
+        querySnapshot.forEach(function(doc) { var data = doc.data(); data.id = doc.id; currentTransactions.push(data); });
+        currentTransactions.sort(function(a, b) { return new Date(b.date) - new Date(a.date); });
+        updateStats(); updateShopFilters(); renderHistory();
+    }).catch(function(error) { console.error("Error loading data: ", error); });
+}
+
+function verifyCode(btn){
+    if(!hasPermission('verify_codes')){return}
+    var rawInput = document.getElementById('mpesaCode').value;
+    var c = rawInput.replace(/\s/g, '').toUpperCase(); 
+    document.getElementById('mpesaCode').value = c;
+    var a = document.getElementById('amount').value; 
+    var s = document.getElementById('shop').value;
+    var msgBox = document.getElementById('verifyMsg');
+    var inputBox = document.getElementById('mpesaCode');
+
+    if(!c || !a || !s){ msgBox.innerHTML='<div class="msg-error">Please fill all fields.</div>'; return; }
+    if(c.length !== 10){
+        inputBox.style.borderColor = '#ef4444'; inputBox.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.3)';
+        setTimeout(function() { inputBox.style.borderColor = '#334155'; inputBox.style.boxShadow = 'none'; }, 2000);
+        msgBox.innerHTML='<div class="msg-error">REJECTED: M-PESA codes are exactly 10 characters. You entered ' + c.length + ' characters.</div>';
+        alert("Invalid Code!\nA valid M-PESA code must be exactly 10 characters.\nYou entered " + c.length + " character(s).");
+        return;
+    }
+    if(!/^[A-Z0-9]+$/.test(c)){
+        msgBox.innerHTML='<div class="msg-error">REJECTED: Code contains invalid symbols.</div>';
+        alert("Invalid Code! M-PESA codes should only contain letters and numbers.");
+        return;
+    }
+    
+    btn.textContent = "Checking..."; btn.disabled = true;
+    db.collection("transactions").where("code", "==", c).get().then(function(querySnapshot) {
+        if (!querySnapshot.empty) {
+            var existingData = querySnapshot.docs[0].data();
+            var usedShop = existingData.shop || "Unknown Shop";
+            var r=loadRejectedCount()+1; saveRejectedCount(r);
+            msgBox.innerHTML='<div class="msg-error">REJECTED! Code <b>'+c+'</b> has already been used at <b>'+usedShop+'</b>.</div>';
+            alert("REJECTED! This code has already been used at " + usedShop + ".");
+            loadTransactionsFromCloud(); btn.textContent = "Verify Code"; btn.disabled = false; return;
+        }
+        
+        var currentRecord = currentUserRecord();
+        var verifierName = currentRecord.realName ? currentRecord.realName : currentUser();
+        
+        db.collection("transactions").add({ code: c, amount: parseFloat(a), shop: s, by: verifierName, date: new Date().toLocaleString() }).then(function() {
+            msgBox.innerHTML='<div class="msg-success">Code <b>'+c+'</b> verified (KES '+a+') for '+s+'.</div>';
+            document.getElementById('mpesaCode').value=''; document.getElementById('amount').value=''; document.getElementById('shop').value=''; document.getElementById('mpesaCode').focus();
+            loadTransactionsFromCloud(); btn.textContent = "Verify Code"; btn.disabled = false;
+        });
+    }).catch(function(error) { alert("Error checking database: " + error.message); btn.textContent = "Verify Code"; btn.disabled = false; });
+}
+
+// 8. UI UPDATES
+function updateStats(){
+    var total=0,today=0,td=new Date().toDateString();
+    for(var i=0;i<currentTransactions.length;i++){
+        var a=Number(currentTransactions[i].amount)||0; total+=a;
+        var d=new Date(currentTransactions[i].date); if(!isNaN(d.getTime())&&d.toDateString()===td)today+=a;
+    }
+    document.getElementById('statCodes').textContent=currentTransactions.length;
+    document.getElementById('statAmount').textContent='KES '+total.toLocaleString();
+    document.getElementById('statRejected').textContent=loadRejectedCount();
+    document.getElementById('statToday').textContent='KES '+today.toLocaleString();
+}
+var shopFilter='';
+function setShopFilter(s,btn){shopFilter=s;var btns=document.querySelectorAll('#filterBtns .filter-btn');for(var i=0;i<btns.length;i++)btns[i].classList.remove('active');if(btn)btn.classList.add('active');renderHistory()}
+function updateShopFilters(){
+    var shops={},i;for(i=0;i<currentTransactions.length;i++)shops[currentTransactions[i].shop]=true;
+    var c=document.getElementById('filterBtns');var html='<button class="filter-btn'+(shopFilter===''?' active':'')+'" onclick="setShopFilter(\'\', this)">All</button>';
+    for(var s in shops){html+='<button class="filter-btn'+(shopFilter===s?' active':'')+'" onclick="setShopFilter(\''+s+'\', this)">'+s+'</button>'}c.innerHTML=html
+}
+
+// 9. HISTORY TABLE
+function renderHistory(){
+    if(!hasPermission('view_history'))return;
+    var sb=document.getElementById('searchBox');var q=sb?(sb.value||'').toLowerCase():'';
+    var tbl=document.getElementById('historyTable');tbl.innerHTML='<tr><th>Code</th><th>Amt</th><th>Shop</th><th>By</th><th></th></tr>';
+    var f=[],i;
+    for(i=0;i<currentTransactions.length;i++){
+        if(shopFilter&&currentTransactions[i].shop!==shopFilter)continue;
+        if(q&&(currentTransactions[i].code+' '+currentTransactions[i].shop+' '+currentTransactions[i].by).toLowerCase().indexOf(q)===-1)continue;
+        f.push(currentTransactions[i])
+    }
+    var rec=f.slice(0,20);var dAny=hasPermission('delete_any');var dOwn=hasPermission('delete_own')||dAny;
+    if(rec.length===0){tbl.innerHTML+='<tr><td colspan="5" style="text-align:center;color:#64748b;padding:20px;">No verifications found.</td></tr>'}
+    else{
+        var st=0;
+        for(i=0;i<rec.length;i++){
+            st+=Number(rec[i].amount)||0;var del='';
+            if(dAny||(dOwn&&rec[i].by===currentUser())){del='<button class="btn-red" style="padding:4px 8px;font-size:11px;width:auto;margin:0" onclick="deleteTransaction(\''+rec[i].id+'\')">X</button>'}
+            tbl.innerHTML+='<tr><td>'+rec[i].code+'</td><td>'+rec[i].amount+'</td><td>'+rec[i].shop+'</td><td>'+rec[i].by+'</td><td>'+del+'</td></tr>'
+        }
+        tbl.innerHTML+='<tr class="table-total"><td>SHOWN</td><td>KES '+st.toLocaleString()+'</td><td colspan="3">'+rec.length+' code(s)</td></tr>'
+    }
+    var g=0;for(i=0;i<currentTransactions.length;i++)g+=Number(currentTransactions[i].amount)||0;
+    tbl.innerHTML+='<tr class="table-grand"><td>GRAND</td><td>KES '+g.toLocaleString()+'</td><td colspan="3">'+currentTransactions.length+' total</td></tr>';
+    tbl.innerHTML+='<tr class="table-rejected"><td colspan="2">REJECTED</td><td colspan="3">'+loadRejectedCount()+' attempt(s)</td></tr>'
+}
+
+// 10. DELETE TRANSACTION
+function deleteTransaction(id){
+    if(!hasPermission('delete_any')&&!hasPermission('delete_own')){return}
+    var tgt=null; for(var i=0;i<currentTransactions.length;i++)if(currentTransactions[i].id===id){tgt=currentTransactions[i];break}
+    if(!tgt)return;
+    if(!hasPermission('delete_any')&&tgt.by!==currentUser()){return}
+    if(!confirm('Delete code '+tgt.code+' from the database?'))return;
+    db.collection("transactions").doc(id).delete().then(function() { alert("Code deleted from database."); loadTransactionsFromCloud(); }).catch(function(error) { alert("Error deleting: " + error.message); });
+}
+
+// 11. ADMIN TOOLS & USER MANAGEMENT
+function resetRejections() { if(!hasPermission('reset_rejections')){return} if(!confirm('Reset rejection counter?'))return; saveRejectedCount(0); updateStats(); renderHistory(); }
+function resetAllData() { if(!hasPermission('clear_all')){return} if(!confirm('DELETE all local data?'))return; localStorage.clear(); location.reload(); }
+
+function addSubAdmin() {
+    if(!isSuperAdmin())return;
+    var u=document.getElementById('newAdminUser').value.trim(); var p=document.getElementById('newAdminPass').value.trim();
+    if(u.length<3){alert('Username too short');return} if(p.length<4){alert('Password too short');return}
+    var users=loadUsers(); if(users[u]){alert('Username exists');return}
+    users[u]={password:p,role:'sub_admin',permissions:{verify_codes:true,view_history:true}};
+    saveUsers(users); document.getElementById('newAdminUser').value=''; document.getElementById('newAdminPass').value=''; renderUserList();
+}
+function renderUserList() {
+    var users=loadUsers(); var c=document.getElementById('userList'); c.innerHTML='';
+    for(var u in users){
+        var rec=users[u]; var blk=document.createElement('div'); blk.className='user-block';
+        var tag=rec.role==='super_admin'?'<span class="role-tag super">SUPER ADMIN</span>':'<span class="role-tag sub">SUB ADMIN</span>';
+        var html='<h4>'+u+' '+tag+'</h4>';
+        if(rec.role==='sub_admin'){
+            for(var key in ALL_PERMISSIONS){
+                var ck=rec.permissions&&rec.permissions[key]?' checked':'';
+                html+='<div class="perm-row"><input type="checkbox"'+ck+' onchange="togglePermission(\''+u+'\', \''+key+'\', this.checked)"><span class="perm-label">'+ALL_PERMISSIONS[key]+'</span></div>'
+            }
+        }else{ html+='<p style="font-size:13px;color:#64748b;">Has all abilities.</p>' }
+        var acts='';
+        if(rec.role==='sub_admin')acts+='<button class="btn-orange small-btn" onclick="promoteToSuper(\''+u+'\')">Promote</button>';
+        if(rec.role==='sub_admin'&&u!==currentUser())acts+='<button class="btn-red small-btn" onclick="deleteUser(\''+u+'\')">Delete</button>';
+        html+='<div style="margin-top:8px">'+acts+'</div>';
+        blk.innerHTML=html; c.appendChild(blk);
+    }
+}
+function togglePermission(u,key,ck) { if(!isSuperAdmin())return; var users=loadUsers(); if(!users[u]||users[u].role!=='sub_admin')return; if(!users[u].permissions)users[u].permissions={}; users[u].permissions[key]=ck; saveUsers(users); }
+function promoteToSuper(u) { if(!isSuperAdmin())return; if(!confirm('Promote '+u+' to Super Admin?'))return; var users=loadUsers(); if(!users[u])return; users[u].role='super_admin'; users[u].permissions={}; saveUsers(users); renderUserList(); }
+function deleteUser(u) { if(!isSuperAdmin())return; if(u===currentUser()){return} if(DEFAULT_USERS[u]){return} if(!confirm('Delete user '+u+'?'))return; var users=loadUsers(); delete users[u]; saveUsers(users); renderUserList(); }
+function stepDown() { if(!isSuperAdmin())return; var users=loadUsers(),sc=0; for(var u in users)if(users[u].role==='super_admin')sc++; if(sc<2){alert('Promote someone first.');return} if(!confirm('Step down as Super Admin?'))return; var me=currentUser(); users[me].role='sub_admin'; users[me].permissions={verify_codes:true,view_history:true}; saveUsers(users); logout(); }
+
+// 12. PROFILE & PASSWORD
+function updateProfileName() {
+    var newName = document.getElementById('profileName').value.trim();
+    if(newName.length < 3) { alert("Name is too short."); return; }
+    var me = currentUser(); var users = loadUsers();
+    users[me].realName = newName; saveUsers(users);
+    document.getElementById('profileMsg').innerHTML = '<div class="msg-success">Real name saved successfully!</div>';
+    showDashboard();
+}
+function changePassword() {
+    var current = document.getElementById('currentPwd').value; var newP = document.getElementById('newPwd').value; var msg = document.getElementById('pwdMsg'); msg.innerHTML = '';
+    if (!current || !newP) { msg.innerHTML = '<div class="msg-error">Please fill both fields.</div>'; return; }
+    if (newP.length < 4) { msg.innerHTML = '<div class="msg-error">New password must be at least 4 characters.</div>'; return; }
+    var me = currentUser(); var users = loadUsers();
+    if (users[me].password !== current) { msg.innerHTML = '<div class="msg-error">Current password is incorrect.</div>'; return; }
+    users[me].password = newP; saveUsers(users);
+    msg.innerHTML = '<div class="msg-success">Password updated successfully!</div>';
+    document.getElementById('currentPwd').value = ''; document.getElementById('newPwd').value = '';
+}
+
+// 13. PREMIUM & EXCEL
+function activatePremium() {
+    var code = document.getElementById('premiumCode').value.trim().toUpperCase();
+    var msg = document.getElementById('premiumMsg');
+    if (code === 'KEREU100') {
+        localStorage.setItem('ev_premium_unlocked', 'true');
+        msg.innerHTML = '<div class="msg-success">Premium Unlocked!</div>';
+        document.getElementById('premiumCode').value = '';
+        document.getElementById('btnDownloadExcel').classList.remove('hidden');
+    } else { msg.innerHTML = '<div class="msg-error">Invalid activation code.</div>'; }
+}
+function downloadExcel() {
+    if (!isSuperAdmin() || !isPremiumActive()) { alert("Access Denied. Premium Feature."); return; }
+    if (currentTransactions.length === 0) { alert("No transactions to download yet!"); return; }
+    var csvContent = "Date,Code,Amount (KES),Shop,Verified By\n";
+    for (var i = 0; i < currentTransactions.length; i++) {
+        var tx = currentTransactions[i];
+        csvContent += '"' + tx.date + '","' + tx.code + '",' + tx.amount + ',"' + tx.shop + '","' + tx.by + '"\n';
+    }
+    var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", "E-verifications_Report.csv"); link.style.visibility = 'hidden';
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+}
+
+// 14. AUTO-LOGIN
+var savedUser=localStorage.getItem('ev_currentUser');
+if(savedUser){ var usersAtLoad=loadUsers(); if(usersAtLoad[savedUser])showDashboard(); else localStorage.removeItem('ev_currentUser'); }
+</script>
+</body>
+</html>
