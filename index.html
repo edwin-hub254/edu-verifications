@@ -260,7 +260,7 @@ firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
 
 // 4. GLOBAL VARIABLES & STORAGE
-var ALL_PERMISSIONS={verify_codes:'Verify M-PESA codes',view_history:'View verification history',delete_own:'Delete codes they entered',delete_any:'Delete any code',reset_rejections:'Reset rejection counter',clear_all:'Clear ALL data'};
+var ALL_PERMISSIONS={verify_codes:'Verify M-PESA codes',view_history:'View verification history',delete_own:'Delete codes they entered',delete_any:'Delete any code',reset_rejections:'Reset rejection counter',clear_all:'Clear ALL data',download_excel:'Download Excel (CSV)'};
 var DEFAULT_USERS={'admin':{password:'1234',role:'super_admin',permissions:{}},'sub1':{password:'pass',role:'sub_admin',permissions:{verify_codes:true,view_history:true}}};
 var currentTransactions = [];
 var videoStream = null;
