@@ -614,17 +614,45 @@ function activatePremium() {
     } else { msg.innerHTML = '<div class="msg-error">Invalid activation code.</div>'; }
 }
 function downloadExcel() {
-    if (!isSuperAdmin() || !isPremiumActive()) { alert("Access Denied. Premium Feature."); return; }
-    if (currentTransactions.length === 0) { alert("No transactions to download yet!"); return; }
-    var csvContent = "Date,Code,Amount (KES),Shop,Verified By\n";
+    if (!hasPermission('download_excel')) { 
+        alert("Access Denied. You do not have permission to download."); 
+        return; 
+    }
+    
+    // Filter data based on the currently selected shop
+    var dataToDownload = [];
     for (var i = 0; i < currentTransactions.length; i++) {
-        var tx = currentTransactions[i];
+        if (shopFilter === '' || currentTransactions[i].shop === shopFilter) {
+            dataToDownload.push(currentTransactions[i]);
+        }
+    }
+
+    if (dataToDownload.length === 0) {
+        alert("No transactions found to download for this selection!");
+        return;
+    }
+
+    var csvContent = "Date,Code,Amount (KES),Shop,Verified By\n";
+    for (var j = 0; j < dataToDownload.length; j++) {
+        var tx = dataToDownload[j];
         csvContent += '"' + tx.date + '","' + tx.code + '",' + tx.amount + ',"' + tx.shop + '","' + tx.by + '"\n';
     }
+
+    // Name the file based on the filter
+    var fileName = "E-verifications_All_Shops.csv";
+    if (shopFilter !== '') {
+        fileName = "E-verifications_" + shopFilter.replace(/\s+/g, '_') + ".csv";
+    }
+
     var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     var url = URL.createObjectURL(blob);
-    var link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", "E-verifications_Report.csv"); link.style.visibility = 'hidden';
-    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    var link = document.createElement("a"); 
+    link.setAttribute("href", url); 
+    link.setAttribute("download", fileName); 
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link); 
+    link.click(); 
+    document.body.removeChild(link);
 }
 
 // 14. AUTO-LOGIN
