@@ -126,21 +126,8 @@ th { color: #64748b; font-weight: 700; font-size: 11px; text-transform: uppercas
                 <input type="number" id="amount" placeholder="Amount (KES)">
                 
                 <select id="shop">
-                    <option value="">-- Select Shop --</option>
-                    <option value="Kamangu">Kamangu</option>
-                    <option value="Muthure">Muthure</option>
-                    <option value="Karinde">Karinde</option>
-                    <option value="Gitaru">Gitaru</option>
-                    <option value="HQ">HQ</option>
-                    <option value="Kitengela">Kitengela</option>
-                    <option value="1B">1B</option>
-                    <option value="Undiri-2am">Undiri-2am</option>
-                    <option value="Undiri-5am">Undiri-5am</option>
-                    <option value="Kahuho-2pm">Kahuho-2pm</option>
-                    <option value="Kahuho-2am">Kahuho-2am</option>
-                    <option value="Kanyariri">Kanyariri</option>
-                    <option value="Route one">Route one</option>
-                </select>
+    <option value="">-- Select Shop --</option>
+</select>
                 <button onclick="verifyCode(this)">Verify Code</button>
             </div>
         </div>
@@ -172,6 +159,13 @@ th { color: #64748b; font-weight: 700; font-size: 11px; text-transform: uppercas
                 <button onclick="addSubAdmin()">Add Sub-Admin</button>
             </div>
             <div class="card"><h3>Users &amp; Permissions</h3><div id="userList"></div></div>
+<div class="card" id="manageShopsCard">
+    <h3>Manage Shops / Routes</h3>
+    <div id="shopMsg"></div>
+    <input type="text" id="newShopName" placeholder="Enter new shop name">
+    <button onclick="addNewShop()" class="btn-orange">Add Shop</button>
+    <ul id="shopListDisplay" style="margin-top: 15px; padding-left: 20px; color: #cbd5e1; font-size: 14px;"></ul>
+</div>
             <div class="card" id="stepDownCard">
                 <h3>Step Down</h3>
                 <button class="btn-orange" onclick="stepDown()">Step Down as Super Admin</button>
@@ -334,6 +328,7 @@ if(hasPermission('download_excel')) {
     
     if(typeof renderUserList === 'function') renderUserList();
     if(typeof loadTransactionsFromCloud === 'function') loadTransactionsFromCloud();
+if(typeof loadShopsFromCloud === 'function') loadShopsFromCloud();
     
     switchTab('verify');
 }
@@ -654,6 +649,73 @@ function downloadExcel() {
     document.body.appendChild(link); 
     link.click(); 
     document.body.removeChild(link);
+}
+// 15. DYNAMIC SHOP MANAGEMENT
+function loadShopsFromCloud() {
+    db.collection("shops").get().then(function(snapshot) {
+        var select = document.getElementById('shop');
+        select.innerHTML = '<option value="">-- Select Shop --</option>';
+        
+        var list = document.getElementById('shopListDisplay');
+        list.innerHTML = ''; 
+
+        snapshot.forEach(function(doc) {
+            var shopName = doc.id; 
+            
+            // Add to Verify Dropdown
+            var opt = document.createElement('option');
+            opt.value = shopName;
+            opt.textContent = shopName;
+            select.appendChild(opt);
+
+            // Add to Admin List
+            var li = document.createElement('li');
+            li.textContent = shopName + " ";
+            
+            var delBtn = document.createElement('button');
+            delBtn.textContent = "Delete";
+            delBtn.className = "btn-red small-btn";
+            delBtn.style.padding = "2px 6px";
+            delBtn.style.fontSize = "10px";
+            delBtn.onclick = function() { deleteShop(shopName); };
+            
+            li.appendChild(delBtn);
+            list.appendChild(li);
+        });
+        
+        updateShopFilters();
+    }).catch(function(error) {
+        console.error("Error loading shops: ", error);
+    });
+}
+
+function addNewShop() {
+    if (!isSuperAdmin()) return;
+    
+    var name = document.getElementById('newShopName').value.trim();
+    if (name === "") { alert("Please enter a shop name."); return; }
+
+    db.collection("shops").doc(name).set({ created: new Date().toLocaleString() })
+    .then(function() {
+        document.getElementById('shopMsg').innerHTML = '<div class="msg-success">Shop "' + name + '" added!</div>';
+        document.getElementById('newShopName').value = "";
+        loadShopsFromCloud(); 
+    }).catch(function(error) {
+        alert("Error adding shop: " + error.message);
+    });
+}
+
+function deleteShop(name) {
+    if (!isSuperAdmin()) return;
+    if (!confirm('Delete the shop "' + name + '"?')) return;
+
+    db.collection("shops").doc(name).delete()
+    .then(function() {
+        document.getElementById('shopMsg').innerHTML = '<div class="msg-success">Shop deleted.</div>';
+        loadShopsFromCloud();
+    }).catch(function(error) {
+        alert("Error deleting shop: " + error.message);
+    });
 }
 
 // 14. AUTO-LOGIN
